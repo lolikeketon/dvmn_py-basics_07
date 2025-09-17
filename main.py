@@ -1,14 +1,9 @@
 import ptbot
-import os
-from dotenv import load_dotenv
 from pytimeparse import parse
+from decouple import config
 
-load_dotenv()
 
-
-TG_TOKEN = os.environ['TGBOT_TOKEN']  # подставьте свой ключ API
-TG_CHAT_ID = os.environ['TGBOT_CHAT_ID']  # подставьте свой ID
-BOT = ptbot.Bot(TG_TOKEN)
+TG_TOKEN_TIMER = config('TGBOT_TOKEN', default='')
 
 
 def render_progressbar(total,
@@ -26,26 +21,27 @@ def render_progressbar(total,
     return '{0} |{1}| {2}% {3}'.format(prefix, pbar, percent, suffix)
 
 
-def timer_done(chat_id):
+def timer_done(chat_id, bot):
     timer_is_done = 'Время вышло!'
-    BOT.send_message(chat_id, timer_is_done)
+    bot.send_message(chat_id, timer_is_done)
 
 
-def wait_timer(chat_id, text):
-    message_id = BOT.send_message(chat_id, "Запускаю таймер")
+def wait_timer(chat_id, text, bot):
+    message_id = bot.send_message(chat_id, "Запускаю таймер")
     timeout_secs = parse(text)
 
-    BOT.create_countdown(timeout_secs,
+    bot.create_countdown(timeout_secs,
                          notify_progress,
                          chat_id=chat_id,
                          message_id=message_id,
-                         timeout_secs_total=timeout_secs)
+                         timeout_secs_total=timeout_secs,
+                         bot=bot)
 
-    BOT.create_timer(timeout_secs, timer_done, chat_id=chat_id,)
+    bot.create_timer(timeout_secs + 0.1, timer_done, chat_id=chat_id, bot=bot)
 
 
-def notify_progress(secs_left, chat_id, message_id, timeout_secs_total):
-    BOT.update_message(chat_id,
+def notify_progress(secs_left, chat_id, message_id, timeout_secs_total, bot):
+    bot.update_message(chat_id,
                        message_id,
                        "Осталось секунд: {}".format(secs_left)
                        + '\n'
@@ -53,8 +49,13 @@ def notify_progress(secs_left, chat_id, message_id, timeout_secs_total):
 
 
 def main():
-    BOT.reply_on_message(wait_timer)
-    BOT.run_bot()
+    bot = ptbot.Bot(TG_TOKEN_TIMER)
+
+    def adapter_wait_timer(chat_id, text):
+        return wait_timer(chat_id, text, bot)
+
+    bot.reply_on_message(adapter_wait_timer)
+    bot.run_bot()
 
 
 if __name__ == '__main__':
