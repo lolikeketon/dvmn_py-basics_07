@@ -3,7 +3,7 @@ from pytimeparse import parse
 from decouple import config
 
 
-TG_TOKEN_TIMER = config('TGBOT_TOKEN', default='')
+TG_TIMER_TOKEN = config('TGBOT_TOKEN', default='')
 
 
 def render_progressbar(total,
@@ -49,7 +49,7 @@ def notify_progress(secs_left, chat_id, message_id, timeout_secs_total, bot):
 
 
 def main():
-    bot = ptbot.Bot(TG_TOKEN_TIMER)
+    bot = ptbot.Bot(TG_TIMER_TOKEN)
 
     def adapter_wait_timer(chat_id, text):
         return wait_timer(chat_id, text, bot)
