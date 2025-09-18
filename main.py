@@ -51,6 +51,7 @@ def notify_progress(secs_left, chat_id, message_id, timeout_secs_total, bot):
 def main():
     load_dotenv()
 
+
     tg_token_timer = os.environ['TGBOT_TOKEN']
     bot = ptbot.Bot(tg_token_timer)
 
