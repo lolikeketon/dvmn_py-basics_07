@@ -1,9 +1,9 @@
-import ptbot
+import os
+
+from dotenv import load_dotenv
 from pytimeparse import parse
-from decouple import config
 
-
-TG_TOKEN_TIMER = config('TGBOT_TOKEN', default='')
+import ptbot
 
 
 def render_progressbar(total,
@@ -49,12 +49,12 @@ def notify_progress(secs_left, chat_id, message_id, timeout_secs_total, bot):
 
 
 def main():
-    bot = ptbot.Bot(TG_TOKEN_TIMER)
+    load_dotenv()
 
-    def adapter_wait_timer(chat_id, text):
-        return wait_timer(chat_id, text, bot)
+    tg_token_timer = os.environ['TGBOT_TOKEN']
+    bot = ptbot.Bot(tg_token_timer)
 
-    bot.reply_on_message(adapter_wait_timer)
+    bot.reply_on_message(wait_timer, bot=bot)
     bot.run_bot()
 
 
